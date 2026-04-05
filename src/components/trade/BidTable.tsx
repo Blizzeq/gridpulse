@@ -58,7 +58,8 @@ export function BidTable({ bids, onChange, disabled }: BidTableProps) {
                 <td className="py-1.5 px-3">
                   <Input
                     type="number"
-                    value={bid.price || ""}
+                    value={bid.price > 0 ? bid.price : ""}
+                    placeholder="0"
                     onChange={(e) => updateBid(bid.hour, "price", e.target.value)}
                     disabled={disabled}
                     className="h-8 text-right text-sm w-28 ml-auto"

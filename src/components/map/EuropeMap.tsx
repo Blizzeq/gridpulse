@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback } from "react";
 import * as d3 from "d3";
 import * as topojson from "topojson-client";
 import { CountryPrice, getPriceTierColor } from "@/types/energy";
-import { ISO_A3_TO_CODE, COUNTRIES } from "@/lib/countries";
+import { ISO_NUM_TO_CODE, COUNTRIES } from "@/lib/countries";
 import type { Topology, GeometryCollection } from "topojson-specification";
 
 interface EuropeMapProps {
@@ -29,8 +29,8 @@ export function EuropeMap({
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
-    const width = svgRef.current.clientWidth;
-    const height = svgRef.current.clientHeight;
+    const width = 800;
+    const height = 600;
 
     // Load TopoJSON
     const topology = (await d3.json("/europe.topo.json")) as Topology;
@@ -42,8 +42,8 @@ export function EuropeMap({
     // Projection centered on Europe
     const projection = d3
       .geoMercator()
-      .center([15, 52])
-      .scale(width * 0.9)
+      .center([15, 55])
+      .scale(500)
       .translate([width / 2, height / 2]);
 
     const path = d3.geoPath().projection(projection);
@@ -58,7 +58,7 @@ export function EuropeMap({
       .attr("fill", (d) => {
         const props = d.properties as { name: string } | undefined;
         const id = d.id as string;
-        const countryCode = ISO_A3_TO_CODE[id];
+        const countryCode = ISO_NUM_TO_CODE[id];
         const price = countryCode ? priceMap.get(countryCode) : null;
         if (price) return getPriceTierColor(price.price_eur);
         // Countries not in ENTSO-E
@@ -68,18 +68,18 @@ export function EuropeMap({
       .attr("stroke-width", 1)
       .attr("cursor", (d) => {
         const id = d.id as string;
-        return ISO_A3_TO_CODE[id] ? "pointer" : "default";
+        return ISO_NUM_TO_CODE[id] ? "pointer" : "default";
       })
       .attr("opacity", (d) => {
         const id = d.id as string;
-        const code = ISO_A3_TO_CODE[id];
+        const code = ISO_NUM_TO_CODE[id];
         if (!code) return 0.4;
         if (selectedCountry && code !== selectedCountry) return 0.7;
         return 1;
       })
       .on("mouseenter", function (event, d) {
         const id = d.id as string;
-        const code = ISO_A3_TO_CODE[id];
+        const code = ISO_NUM_TO_CODE[id];
         if (!code) return;
 
         const country = COUNTRIES[code];
@@ -121,7 +121,7 @@ export function EuropeMap({
       })
       .on("click", (_event, d) => {
         const id = d.id as string;
-        const code = ISO_A3_TO_CODE[id];
+        const code = ISO_NUM_TO_CODE[id];
         if (code) onCountryClick(code);
       });
   }, [prices, selectedCountry, onCountryClick, priceMap]);

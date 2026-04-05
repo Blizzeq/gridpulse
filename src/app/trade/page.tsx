@@ -5,7 +5,7 @@ import { BidTable } from "@/components/trade/BidTable";
 import { PnlCard } from "@/components/trade/PnlCard";
 import { Leaderboard } from "@/components/trade/Leaderboard";
 import { useSubmitBids, useRevealTrade } from "@/hooks/useTrading";
-import { usePrices } from "@/hooks/usePrices";
+import { useQuery } from "@tanstack/react-query";
 import { Bid, TradeScore } from "@/types/trading";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,15 +37,29 @@ export default function TradePage() {
   const revealMutation = useRevealTrade();
 
   // Context: 7-day price history before challenge date
-  const contextStart = useMemo(() => {
-    const d = new Date(challengeDate);
-    d.setDate(d.getDate() - 7);
-    return d.toISOString().split("T")[0];
+  const contextRange = useMemo(() => {
+    const end = new Date(challengeDate);
+    end.setDate(end.getDate() - 1);
+    const start = new Date(end);
+    start.setDate(start.getDate() - 6);
+    return {
+      start: start.toISOString().split("T")[0],
+      end: end.toISOString().split("T")[0],
+    };
   }, [challengeDate]);
 
-  const { data: historyPrices = [] } = usePrices("PL", contextStart);
+  const { data: historyPrices = [] } = useQuery({
+    queryKey: ["prices-history", contextRange.start, contextRange.end],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/prices?country=PL&date=${contextRange.start}&date_to=${contextRange.end}`
+      );
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
 
-  const contextChartData = historyPrices.map((p, i) => ({
+  const contextChartData = historyPrices.map((p: { price_eur: number }, i: number) => ({
     idx: i,
     price: p.price_eur,
   }));

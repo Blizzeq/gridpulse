@@ -1,7 +1,5 @@
 "use client";
 
-import { Slider } from "@/components/ui/slider";
-
 interface HourSliderProps {
   hour: number;
   onChange: (hour: number) => void;
@@ -16,13 +14,14 @@ export function HourSlider({ hour, onChange }: HourSliderProps) {
           {hour.toString().padStart(2, "0")}:00
         </span>
       </div>
-      <Slider
-        value={[hour]}
-        onValueChange={(v) => onChange(Array.isArray(v) ? v[0] : v)}
+      <input
+        type="range"
         min={0}
         max={23}
         step={1}
-        className="w-full"
+        value={hour}
+        onChange={(e) => onChange(parseInt(e.target.value))}
+        className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-emerald-500"
       />
       <div className="flex justify-between mt-1">
         <span className="text-[10px] text-gray-400">00:00</span>

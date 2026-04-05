@@ -30,15 +30,9 @@ export async function POST(request: NextRequest) {
 
   const supabase = await createClient();
 
-  // Get current user (anonymous or authenticated)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const { data, error } = await supabase
     .from("trades")
     .insert({
-      user_id: user?.id,
       challenge_date,
       country,
       bids,

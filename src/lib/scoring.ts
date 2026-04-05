@@ -3,14 +3,21 @@ import { Price } from "@/types/energy";
 
 /**
  * Score a trade by comparing user bids against actual market prices.
- * A bid is "accepted" if bid_price >= market_price (user willing to pay at least market rate).
- * P&L = sum of (market_price * volume) for accepted bids.
+ *
+ * Mechanics:
+ * - Bid accepted if bid_price >= market_price (you're willing to pay market rate)
+ * - Profit per hour = (avg_market_price - actual_price) * volume
+ *   → buying during cheap hours earns positive profit
+ *   → buying during expensive hours earns negative profit
+ * - Goal: predict which hours will be cheap and bid high on those
  */
 export function scoreTrade(
   bids: Bid[],
   actualPrices: Price[]
 ): TradeScore {
   const priceMap = new Map(actualPrices.map((p) => [p.hour, p.price_eur]));
+  const avgPrice =
+    actualPrices.reduce((sum, p) => sum + p.price_eur, 0) / actualPrices.length;
 
   const results: TradeResult[] = bids.map((bid) => {
     const marketPrice = priceMap.get(bid.hour) ?? 0;
@@ -22,7 +29,9 @@ export function scoreTrade(
       market_price: marketPrice,
       volume: bid.volume,
       accepted,
-      pnl: accepted ? (bid.price - marketPrice) * bid.volume : 0,
+      pnl: accepted
+        ? Math.round((avgPrice - marketPrice) * bid.volume * 100) / 100
+        : 0,
     };
   });
 

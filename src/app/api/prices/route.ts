@@ -46,6 +46,24 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result);
   }
 
+  // Country + date range: return multi-day prices
+  const dateTo = searchParams.get("date_to");
+  if (country && date && dateTo) {
+    const { data, error } = await supabase
+      .from("prices")
+      .select("*")
+      .eq("country", country)
+      .gte("date", date)
+      .lte("date", dateTo)
+      .order("date")
+      .order("hour");
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json(data);
+  }
+
   // Country + date: return hourly prices
   if (country && date) {
     const { data, error } = await supabase
