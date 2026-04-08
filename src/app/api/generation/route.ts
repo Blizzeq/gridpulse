@@ -43,7 +43,9 @@ export async function GET(request: NextRequest) {
   // Fetch from ENTSO-E
   let entsoeData: { source_type: string; hour: number; value_mw: number }[];
   try {
+    console.log(`[gen] Fetching ENTSO-E for ${country}/${date} hour=${hourNum}`);
     entsoeData = await fetchFromEntsoe(country, date);
+    console.log(`[gen] ENTSO-E returned ${entsoeData.length} rows for ${country}/${date}`);
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.stack ?? e.message : String(e);
     console.error(`ENTSO-E generation error [${country}/${date}]: ${msg}`);
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (entsoeData.length === 0) {
-    console.log(`[gen] No ENTSO-E data for ${country}/${date}`);
+    console.log(`[gen] No ENTSO-E data for ${country}/${date} (hour=${hourNum})`);
     return NextResponse.json([]);
   }
 

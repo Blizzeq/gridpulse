@@ -138,7 +138,9 @@ export async function fetchGeneration(
       periodStart: start,
       periodEnd: end,
     });
-  } catch {
+    console.log(`[entsoe-gen] A75 OK for ${countryCode}, xml length=${xml.length}`);
+  } catch (e) {
+    console.log(`[entsoe-gen] A75 failed for ${countryCode}: ${e instanceof Error ? e.message : e}`);
     // Fallback to wind+solar forecast (A69)
     try {
       xml = await entsoeGet({
@@ -148,7 +150,9 @@ export async function fetchGeneration(
         periodStart: start,
         periodEnd: end,
       });
-    } catch {
+      console.log(`[entsoe-gen] A69 fallback OK for ${countryCode}, xml length=${xml.length}`);
+    } catch (e2) {
+      console.log(`[entsoe-gen] A69 also failed for ${countryCode}: ${e2 instanceof Error ? e2.message : e2}`);
       return [];
     }
   }
@@ -157,6 +161,7 @@ export async function fetchGeneration(
   const timeSeries = asArray(
     doc?.GL_MarketDocument?.TimeSeries
   );
+  console.log(`[entsoe-gen] ${countryCode}: parsed ${timeSeries.length} TimeSeries`);
 
   // Step 1: Average sub-hourly to hourly PER PSR type
   const psrHourly = new Map<string, { sum: number; count: number }>();
