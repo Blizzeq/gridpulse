@@ -49,7 +49,7 @@ const CHECKLIST = [
 const HERO_METRICS = [
   { label: "Peak Demand", value: "42.8", unit: "GW" },
   { label: "Renewables", value: "64.2", unit: "%" },
-  { label: "Spread", value: "-18/141", unit: "EUR" },
+  { label: "Avg Price", value: "87", unit: "EUR" },
 ];
 
 const BOTTOM_STATS = [
@@ -134,71 +134,77 @@ export default function HomePage() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(0,105,81,0.12),transparent_35%)]" />
             <div className="relative space-y-5 sm:space-y-6">
               {/* Header */}
-              <div>
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className="gp-kicker">Platform Overview</p>
-                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary sm:text-[11px]">
-                    <span className="live-dot" />
-                    Live
-                  </span>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="gp-kicker mb-2">Platform Overview</p>
+                  <h2 className="text-xl font-bold tracking-[-0.03em] text-[#111827] sm:text-2xl">
+                    Intelligence as Infrastructure.
+                  </h2>
+                  <p className="mt-2 hidden text-sm leading-relaxed text-[#505f76] sm:block">
+                    Live telemetry, pricing intelligence, and decision support
+                    arranged as one coherent operating workspace.
+                  </p>
                 </div>
-                <h2 className="text-xl font-bold tracking-[-0.03em] text-[#111827] sm:text-2xl">
-                  Intelligence as Infrastructure.
-                </h2>
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary sm:text-[11px]">
+                  <span className="live-dot" />
+                  Live
+                </span>
               </div>
 
-              {/* Metrics row — compact on mobile */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                {HERO_METRICS.map((metric, i) => (
-                  <div
-                    key={metric.label}
-                    className="animate-fade-up rounded-2xl bg-[#f3f3f5] p-3 sm:p-4"
-                    style={{ animationDelay: `${200 + i * 80}ms` }}
-                  >
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#6d7a74] sm:text-[10px]">
-                      {metric.label}
-                    </p>
-                    <p className="mt-1 text-lg font-black tracking-[-0.04em] text-[#111827] sm:mt-2 sm:text-3xl">
-                      {metric.value}
-                      <span className="ml-0.5 text-[10px] font-medium text-[#505f76] sm:text-sm">
-                        {metric.unit}
-                      </span>
-                    </p>
-                  </div>
-                ))}
+              {/* Large metrics — the hero numbers */}
+              <div className="gp-grid-bg overflow-hidden rounded-2xl p-3 sm:rounded-[22px] sm:p-5 lg:p-6">
+                <div className="grid grid-cols-3 divide-x divide-black/5">
+                  {HERO_METRICS.map((metric, i) => (
+                    <div
+                      key={metric.label}
+                      className="animate-fade-up px-2.5 first:pl-0 last:pr-0 sm:px-4 lg:px-5"
+                      style={{ animationDelay: `${200 + i * 80}ms` }}
+                    >
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#6d7a74] sm:text-[10px]">
+                        {metric.label}
+                      </p>
+                      <p className="mt-1 text-xl font-black tracking-[-0.04em] text-[#111827] sm:mt-2 sm:text-2xl md:text-3xl lg:text-[2.5rem]">
+                        {metric.value}
+                        <span className="ml-0.5 text-[10px] font-medium text-[#505f76] sm:text-sm">
+                          {metric.unit}
+                        </span>
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Mini visualizations */}
+              {/* Bottom row — two cards */}
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <div className="rounded-2xl bg-[#f3f3f5] p-4">
-                  <div className="mb-3 flex items-center justify-between">
+                <div className="rounded-2xl bg-[#f3f3f5] p-4 sm:p-5">
+                  <div className="mb-2 flex items-center justify-between sm:mb-4">
                     <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#6d7a74] sm:text-[10px]">
                       Load Shift
                     </p>
                     <Gauge className="h-4 w-4 text-primary" />
                   </div>
-                  <p className="mb-3 text-2xl font-black tracking-[-0.04em] text-[#111827] sm:text-3xl">
-                    32<span className="text-sm font-bold text-[#505f76]">%</span>
+                  <p className="mb-3 text-2xl font-black tracking-[-0.04em] text-[#111827] sm:mb-4 sm:text-4xl">
+                    32<span className="text-sm font-bold text-[#505f76] sm:text-lg">%</span>
                   </p>
-                  <div className="h-3 overflow-hidden rounded-full bg-white">
+                  <div className="h-2.5 overflow-hidden rounded-full bg-white sm:h-3">
                     <div className="gp-primary-gradient h-full w-[64%] rounded-full animate-bar-grow" />
                   </div>
                 </div>
-                <div className="rounded-2xl bg-[#f3f3f5] p-4">
-                  <div className="mb-3 flex items-center justify-between">
+                <div className="rounded-2xl bg-[#f3f3f5] p-4 sm:p-5">
+                  <div className="mb-2 flex items-center justify-between sm:mb-4">
                     <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#6d7a74] sm:text-[10px]">
                       Trading Pulse
                     </p>
                     <TrendingUp className="h-4 w-4 text-primary" />
                   </div>
-                  <p className="mb-3 text-2xl font-black tracking-[-0.04em] text-[#111827] sm:text-3xl">
+                  <p className="mb-3 text-2xl font-black tracking-[-0.04em] text-[#111827] sm:mb-4 sm:text-4xl">
                     103
                   </p>
-                  <div className="flex items-end gap-1 h-3">
+                  <div className="flex items-end gap-1 h-6 sm:h-8">
                     {[34, 42, 51, 46, 58, 66, 61, 74].map((h, i) => (
                       <div
                         key={i}
-                        className="flex-1 rounded-t-sm bg-primary/70 animate-bar-grow"
+                        className="flex-1 rounded-t-sm bg-primary/70 transition-all duration-200 hover:bg-primary animate-bar-grow"
                         style={{
                           height: `${Math.round((h / 74) * 100)}%`,
                           animationDelay: `${400 + i * 50}ms`,
