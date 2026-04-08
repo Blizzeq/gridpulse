@@ -15,7 +15,7 @@ export function EnergyMixDonut({ data, totalGw }: EnergyMixDonutProps) {
     .sort((a, b) => b.percentage - a.percentage);
 
   return (
-    <div className="relative" style={{ width: 180, height: 180, margin: "0 auto" }}>
+    <div className="relative mx-auto" style={{ width: 180, height: 180 }}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -26,7 +26,8 @@ export function EnergyMixDonut({ data, totalGw }: EnergyMixDonutProps) {
             outerRadius={80}
             dataKey="percentage"
             nameKey="source_type"
-            strokeWidth={0}
+            stroke="#f9f9fb"
+            strokeWidth={4}
           >
             {chartData.map((entry) => (
               <Cell
@@ -38,10 +39,10 @@ export function EnergyMixDonut({ data, totalGw }: EnergyMixDonutProps) {
         </PieChart>
       </ResponsiveContainer>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-bold text-gray-900">
+        <span className="text-2xl font-black tracking-[-0.04em] text-[#111827]">
           {totalGw.toFixed(1)}
         </span>
-        <span className="text-xs text-gray-400">GW</span>
+        <span className="gp-metric-label">GW</span>
       </div>
     </div>
   );

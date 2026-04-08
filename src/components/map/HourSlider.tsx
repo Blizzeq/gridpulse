@@ -7,10 +7,15 @@ interface HourSliderProps {
 
 export function HourSlider({ hour, onChange }: HourSliderProps) {
   return (
-    <div className="px-4 py-3">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-gray-500">Hour</span>
-        <span className="text-sm font-semibold text-gray-900 bg-gray-100 px-3 py-0.5 rounded-full">
+    <div className="rounded-[20px] bg-white/88 p-4 shadow-[0_24px_80px_-60px_rgba(17,24,39,0.7)] backdrop-blur-md sm:p-5">
+      <div className="mb-3 flex items-center justify-between gap-4">
+        <div>
+          <p className="gp-metric-label mb-1">Temporal pulse</p>
+          <p className="text-sm font-medium text-[#505f76]">
+            Explore day-ahead price changes across the grid.
+          </p>
+        </div>
+        <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
           {hour.toString().padStart(2, "0")}:00
         </span>
       </div>
@@ -21,14 +26,14 @@ export function HourSlider({ hour, onChange }: HourSliderProps) {
         step={1}
         value={hour}
         onChange={(e) => onChange(parseInt(e.target.value))}
-        className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-emerald-500"
+        className="gp-range h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#e8e8ea]"
       />
-      <div className="flex justify-between mt-1">
-        <span className="text-[10px] text-gray-400">00:00</span>
-        <span className="text-[10px] text-gray-400">06:00</span>
-        <span className="text-[10px] text-gray-400">12:00</span>
-        <span className="text-[10px] text-gray-400">18:00</span>
-        <span className="text-[10px] text-gray-400">23:00</span>
+      <div className="mt-2 flex justify-between text-[10px] font-medium text-[#6d7a74]">
+        <span>00:00</span>
+        <span>06:00</span>
+        <span>12:00</span>
+        <span>18:00</span>
+        <span>23:00</span>
       </div>
     </div>
   );

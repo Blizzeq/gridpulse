@@ -304,6 +304,15 @@ export const FLOW_PAIRS: [string, string][] = [
   ["RS", "BG"],
 ];
 
-export const COUNTRY_LIST = Object.values(COUNTRIES).sort((a, b) =>
+/** Countries without reliable day-ahead price data on ENTSO-E. */
+const EXCLUDED_FROM_SELECTION = new Set(["RS", "IE", "GB"]);
+
+/** Sorted list of countries with reliable ENTSO-E data — used for dropdowns. */
+export const COUNTRY_LIST = Object.values(COUNTRIES)
+  .filter((c) => !EXCLUDED_FROM_SELECTION.has(c.code))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+/** Full sorted list including all countries — used for map rendering. */
+export const ALL_COUNTRY_LIST = Object.values(COUNTRIES).sort((a, b) =>
   a.name.localeCompare(b.name)
 );

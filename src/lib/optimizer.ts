@@ -8,13 +8,20 @@ export interface OptimalWindow {
 export interface OptimizationResult {
   best: OptimalWindow;
   worst: OptimalWindow;
+  alternatives: OptimalWindow[];
   savings_eur: number;
   savings_pct: number;
 }
 
+interface WindowCandidate {
+  startIndex: number;
+  cost: number;
+}
+
 /**
  * Sliding window algorithm to find the cheapest and most expensive
- * time windows for running a device.
+ * time windows for running a device. Returns top 3 non-overlapping
+ * best windows plus the single worst window.
  */
 export function findOptimalWindows(
   prices: number[],
@@ -28,9 +35,8 @@ export function findOptimalWindows(
     throw new Error("Not enough price data for the given duration");
   }
 
-  let bestStart = 0;
+  const candidates: WindowCandidate[] = [];
   let worstStart = 0;
-  let bestCost = Infinity;
   let worstCost = -Infinity;
 
   for (let i = 0; i <= prices.length - windowSize; i++) {
@@ -50,42 +56,54 @@ export function findOptimalWindows(
       windowCost -= prices[i + windowSize - 1] * powerKw * (1 - fraction);
     }
 
-    if (windowCost < bestCost) {
-      bestCost = windowCost;
-      bestStart = i;
-    }
+    candidates.push({ startIndex: i, cost: windowCost });
+
     if (windowCost > worstCost) {
       worstCost = windowCost;
       worstStart = i;
     }
   }
 
-  const bestAvg =
-    bestCost / (powerKw * durationHours);
-  const worstAvg =
-    worstCost / (powerKw * durationHours);
+  // Sort candidates by cost ascending
+  candidates.sort((a, b) => a.cost - b.cost);
 
-  // Convert from EUR/MWh * kW to EUR (divide by 1000)
-  const bestCostEur = bestCost / 1000;
-  const worstCostEur = worstCost / 1000;
+  // Pick top 3 non-overlapping windows
+  const topWindows: WindowCandidate[] = [];
+  for (const candidate of candidates) {
+    if (topWindows.length >= 3) break;
+
+    const overlaps = topWindows.some(
+      (w) =>
+        candidate.startIndex < w.startIndex + windowSize &&
+        candidate.startIndex + windowSize > w.startIndex
+    );
+
+    if (!overlaps) {
+      topWindows.push(candidate);
+    }
+  }
+
+  const makeWindow = (start: number, cost: number): OptimalWindow => ({
+    startIndex: start,
+    endIndex: start + windowSize - 1,
+    totalCost: cost / 1000,
+    avgPrice: cost / (powerKw * durationHours),
+  });
+
+  const best = makeWindow(topWindows[0].startIndex, topWindows[0].cost);
+  const worst = makeWindow(worstStart, worstCost);
+  const alternatives = topWindows
+    .slice(1)
+    .map((w) => makeWindow(w.startIndex, w.cost));
 
   return {
-    best: {
-      startIndex: bestStart,
-      endIndex: bestStart + windowSize - 1,
-      totalCost: bestCostEur,
-      avgPrice: bestAvg,
-    },
-    worst: {
-      startIndex: worstStart,
-      endIndex: worstStart + windowSize - 1,
-      totalCost: worstCostEur,
-      avgPrice: worstAvg,
-    },
-    savings_eur: worstCostEur - bestCostEur,
+    best,
+    worst,
+    alternatives,
+    savings_eur: worst.totalCost - best.totalCost,
     savings_pct:
-      worstCostEur > 0
-        ? ((worstCostEur - bestCostEur) / worstCostEur) * 100
+      worst.totalCost > 0
+        ? ((worst.totalCost - best.totalCost) / worst.totalCost) * 100
         : 0,
   };
 }

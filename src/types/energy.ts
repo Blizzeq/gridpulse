@@ -56,15 +56,42 @@ export interface CountryData {
   centroid: [number, number];
 }
 
-export const PRICE_TIERS = {
-  cheap: 30,
-  medium: 80,
-  expensive: 150,
-} as const;
-
-export function getPriceTierColor(price: number): string {
-  if (price < PRICE_TIERS.cheap) return "#22c55e";
-  if (price < PRICE_TIERS.medium) return "#eab308";
-  if (price < PRICE_TIERS.expensive) return "#f97316";
-  return "#ef4444";
+export interface DailyStats {
+  avg: number;
+  min: number;
+  max: number;
+  prices: Price[];
 }
+
+/**
+ * Color scale calibrated to real ENTSO-E data (Apr 2026).
+ * Median ~66, p25 ~10, p75 ~118, range -200 to +280.
+ */
+export function getPriceTierColor(price: number): string {
+  if (price < 0) return "#06b6d4";     // cyan — negative (surplus)
+  if (price < 20) return "#22c55e";    // green — very cheap
+  if (price < 50) return "#84cc16";    // lime — cheap
+  if (price < 80) return "#eab308";    // yellow — moderate
+  if (price < 120) return "#f97316";   // orange — expensive
+  if (price < 200) return "#ef4444";   // red — very expensive
+  return "#991b1b";                     // dark red — extreme
+}
+
+export function getPriceTierLabel(price: number): string {
+  if (price < 0) return "Negative";
+  if (price < 20) return "Very cheap";
+  if (price < 50) return "Cheap";
+  if (price < 80) return "Moderate";
+  if (price < 120) return "Expensive";
+  if (price < 200) return "Very expensive";
+  return "Extreme";
+}
+
+export const PRICE_LEGEND = [
+  { label: "<0", price: -10, description: "Surplus" },
+  { label: "0-20", price: 10, description: "Very cheap" },
+  { label: "20-50", price: 35, description: "Cheap" },
+  { label: "50-80", price: 65, description: "Moderate" },
+  { label: "80-120", price: 100, description: "Expensive" },
+  { label: "120+", price: 150, description: "Very expensive" },
+];
