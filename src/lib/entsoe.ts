@@ -55,20 +55,26 @@ const PSR_MAP: Record<string, string> = {
 async function entsoeGet(params: Record<string, string>): Promise<string> {
   const token = process.env.ENTSOE_API_TOKEN;
   if (!token) throw new Error("ENTSOE_API_TOKEN not set");
-  const url = new URL(BASE_URL);
-  url.searchParams.set("securityToken", token);
-  for (const [k, v] of Object.entries(params)) {
-    url.searchParams.set(k, v);
-  }
-  const finalUrl = url.toString();
+
+  // Build URL with manual string concatenation (same approach as debug endpoint)
+  const paramStr = Object.entries(params)
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+    .join("&");
+  const finalUrl = `${BASE_URL}?securityToken=${token}&${paramStr}`;
+
+  console.log(`[entsoeGet] ${params.documentType} ${params.in_Domain?.slice(0, 10)}...`);
+
   const res = await fetch(finalUrl, {
     cache: "no-store",
     headers: { "Accept": "application/xml" },
   });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`ENTSO-E ${res.status}: ${text.slice(0, 300)}`);
+    const errMsg = `ENTSO-E ${res.status}: ${text.slice(0, 200)}`;
+    console.error(`[entsoeGet] FAIL: ${errMsg}`);
+    throw new Error(errMsg);
   }
+  console.log(`[entsoeGet] OK ${params.documentType}: ${res.status}`);
   return res.text();
 }
 
@@ -140,7 +146,7 @@ export async function fetchGeneration(
       periodEnd: end,
     });
   } catch (e) {
-    errors.push(`A75: ${e instanceof Error ? e.message.slice(0, 120) : e}`);
+    console.error(`[entsoe-gen] A75 failed for ${countryCode}: ${e instanceof Error ? e.message.slice(0, 200) : e}`);
     // Fallback to day-ahead generation forecast (A71)
     try {
       xml = await entsoeGet({
@@ -151,7 +157,7 @@ export async function fetchGeneration(
         periodEnd: end,
       });
     } catch (e2) {
-      errors.push(`A71: ${e2 instanceof Error ? e2.message.slice(0, 120) : e2}`);
+      console.error(`[entsoe-gen] A71 failed for ${countryCode}: ${e2 instanceof Error ? e2.message.slice(0, 200) : e2}`);
       // Fallback to wind+solar forecast (A69)
       try {
         xml = await entsoeGet({
@@ -162,8 +168,7 @@ export async function fetchGeneration(
           periodEnd: end,
         });
       } catch (e3) {
-        errors.push(`A69: ${e3 instanceof Error ? e3.message.slice(0, 120) : e3}`);
-        console.error(`[entsoe-gen] All endpoints failed for ${countryCode}: ${errors.join(" | ")}`);
+        console.error(`[entsoe-gen] A69 failed for ${countryCode}: ${e3 instanceof Error ? e3.message.slice(0, 200) : e3}`);
         return [];
       }
     }
