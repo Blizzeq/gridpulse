@@ -48,6 +48,12 @@ export async function GET(request: NextRequest) {
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error(`[gen] ENTSO-E error [${country}/${date}]: ${msg}`);
+    // Fallback to cached data on error
+    if (dbData && dbData.length > 0) {
+      return NextResponse.json(
+        aggregateBySource(dbData as { source_type: string; value_mw: number }[])
+      );
+    }
     if (debug) return NextResponse.json({ error: msg, step: "entsoe-fetch" });
     return NextResponse.json([]);
   }
@@ -59,7 +65,7 @@ export async function GET(request: NextRequest) {
         aggregateBySource(dbData as { source_type: string; value_mw: number }[])
       );
     }
-    if (debug) return NextResponse.json({ error: "empty", country, date, hourNum, dbRows: dbData?.length ?? 0 });
+    if (debug) return NextResponse.json({ error: "empty-after-fetch", country, date, hourNum, dbRows: dbData?.length ?? 0 });
     return NextResponse.json([]);
   }
 

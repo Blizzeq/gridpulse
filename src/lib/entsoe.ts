@@ -128,8 +128,9 @@ export async function fetchGeneration(
 
   const { start, end } = periodDates(dateStr);
 
-  // Try actual generation first, then forecast
+  // Try actual generation first (A75), then installed capacity (A68), then forecast (A69)
   let xml: string;
+  const errors: string[] = [];
   try {
     xml = await entsoeGet({
       documentType: "A75",
@@ -138,22 +139,33 @@ export async function fetchGeneration(
       periodStart: start,
       periodEnd: end,
     });
-    console.log(`[entsoe-gen] A75 OK for ${countryCode}, xml length=${xml.length}`);
   } catch (e) {
-    console.log(`[entsoe-gen] A75 failed for ${countryCode}: ${e instanceof Error ? e.message : e}`);
-    // Fallback to wind+solar forecast (A69)
+    errors.push(`A75: ${e instanceof Error ? e.message.slice(0, 120) : e}`);
+    // Fallback to day-ahead generation forecast (A71)
     try {
       xml = await entsoeGet({
-        documentType: "A69",
+        documentType: "A71",
         processType: "A01",
         in_Domain: country.eicCode,
         periodStart: start,
         periodEnd: end,
       });
-      console.log(`[entsoe-gen] A69 fallback OK for ${countryCode}, xml length=${xml.length}`);
     } catch (e2) {
-      console.log(`[entsoe-gen] A69 also failed for ${countryCode}: ${e2 instanceof Error ? e2.message : e2}`);
-      return [];
+      errors.push(`A71: ${e2 instanceof Error ? e2.message.slice(0, 120) : e2}`);
+      // Fallback to wind+solar forecast (A69)
+      try {
+        xml = await entsoeGet({
+          documentType: "A69",
+          processType: "A01",
+          in_Domain: country.eicCode,
+          periodStart: start,
+          periodEnd: end,
+        });
+      } catch (e3) {
+        errors.push(`A69: ${e3 instanceof Error ? e3.message.slice(0, 120) : e3}`);
+        console.error(`[entsoe-gen] All endpoints failed for ${countryCode}: ${errors.join(" | ")}`);
+        return [];
+      }
     }
   }
 
