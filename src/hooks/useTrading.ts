@@ -1,13 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bid, LeaderboardEntry, TradeScore } from "@/types/trading";
-
-async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
-  const res = await fetch("/api/trading/leaderboard");
-  if (!res.ok) throw new Error("Failed to fetch leaderboard");
-  return res.json();
-}
+import { useMutation } from "@tanstack/react-query";
+import { Bid, TradeScore } from "@/types/trading";
 
 async function submitBids(payload: {
   bids: Bid[];
@@ -33,22 +27,8 @@ async function revealTrade(tradeId: string): Promise<TradeScore> {
   return res.json();
 }
 
-export function useLeaderboard() {
-  return useQuery({
-    queryKey: ["leaderboard"],
-    queryFn: fetchLeaderboard,
-    refetchInterval: 30 * 1000,
-  });
-}
-
 export function useSubmitBids() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: submitBids,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
-    },
-  });
+  return useMutation({ mutationFn: submitBids });
 }
 
 export function useRevealTrade() {
