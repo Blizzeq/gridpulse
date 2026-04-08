@@ -47,24 +47,9 @@ const CHECKLIST = [
 ];
 
 const HERO_METRICS = [
-  {
-    label: "Peak Demand",
-    value: "42.8",
-    unit: "GW",
-    accent: "bg-primary/10 text-primary",
-  },
-  {
-    label: "Renewable Mix",
-    value: "64.2",
-    unit: "%",
-    accent: "bg-emerald-50 text-emerald-700",
-  },
-  {
-    label: "Market Spread",
-    value: "-18 to 141",
-    unit: "EUR",
-    accent: "bg-slate-100 text-slate-700",
-  },
+  { label: "Peak Demand", value: "42.8", unit: "GW" },
+  { label: "Renewables", value: "64.2", unit: "%" },
+  { label: "Spread", value: "-18/141", unit: "EUR" },
 ];
 
 const BOTTOM_STATS = [
@@ -145,106 +130,81 @@ export default function HomePage() {
           </div>
 
           {/* Right column — Hero card */}
-          <div className="gp-card relative overflow-hidden p-6 sm:p-8 animate-fade-up delay-200">
+          <div className="gp-card relative overflow-hidden p-5 sm:p-8 animate-fade-up delay-200">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(0,105,81,0.12),transparent_35%)]" />
-            <div className="relative space-y-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="gp-kicker mb-2">Platform Overview</p>
-                  <h2 className="text-2xl font-bold tracking-[-0.03em] text-[#111827]">
-                    Intelligence as Infrastructure.
-                  </h2>
-                  <p className="mt-3 max-w-md text-sm leading-7 text-[#505f76]">
-                    Live telemetry, pricing intelligence, and decision support
-                    arranged as one coherent operating workspace.
-                  </p>
+            <div className="relative space-y-5 sm:space-y-6">
+              {/* Header */}
+              <div>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="gp-kicker">Platform Overview</p>
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary sm:text-[11px]">
+                    <span className="live-dot" />
+                    Live
+                  </span>
                 </div>
-                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                  <span className="live-dot" />
-                  Live telemetry
-                </span>
+                <h2 className="text-xl font-bold tracking-[-0.03em] text-[#111827] sm:text-2xl">
+                  Intelligence as Infrastructure.
+                </h2>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-[1.25fr_0.75fr]">
-                {/* Grid Nodes panel */}
-                <div className="gp-grid-bg relative min-h-[240px] overflow-hidden rounded-[20px] p-5 sm:min-h-[360px] sm:rounded-[28px] sm:p-6">
-                  <div className="absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top_left,rgba(0,105,81,0.16),transparent_60%)]" />
-                  <div className="relative flex h-full flex-col justify-between gap-6">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="gp-metric-label mb-1">Active Grid Nodes</p>
-                        <h3 className="text-lg font-bold tracking-[-0.03em] text-[#111827] sm:text-2xl">
-                          Continental overview
-                        </h3>
-                      </div>
-                      <Activity className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                      {HERO_METRICS.map((metric, i) => (
-                        <div
-                          key={metric.label}
-                          className="animate-fade-up rounded-[12px] bg-white/90 p-3 shadow-[0_20px_50px_-42px_rgba(17,24,39,0.7)] backdrop-blur-sm sm:rounded-[18px] sm:p-4"
-                          style={{ animationDelay: `${300 + i * 100}ms` }}
-                        >
-                          <p className="gp-metric-label mb-1 sm:mb-2">{metric.label}</p>
-                          <p className="text-lg font-black tracking-[-0.04em] text-[#111827] sm:text-2xl">
-                            {metric.value}
-                            {metric.unit && (
-                              <span className="ml-0.5 text-[10px] font-medium text-[#505f76] sm:ml-1 sm:text-sm">
-                                {metric.unit}
-                              </span>
-                            )}
-                          </p>
-                          <span
-                            className={`mt-2 hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] sm:inline-flex ${metric.accent}`}
-                          >
-                            <span className="live-dot" />
-                            Live
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+              {/* Metrics row — compact on mobile */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                {HERO_METRICS.map((metric, i) => (
+                  <div
+                    key={metric.label}
+                    className="animate-fade-up rounded-2xl bg-[#f3f3f5] p-3 sm:p-4"
+                    style={{ animationDelay: `${200 + i * 80}ms` }}
+                  >
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#6d7a74] sm:text-[10px]">
+                      {metric.label}
+                    </p>
+                    <p className="mt-1 text-lg font-black tracking-[-0.04em] text-[#111827] sm:mt-2 sm:text-3xl">
+                      {metric.value}
+                      <span className="ml-0.5 text-[10px] font-medium text-[#505f76] sm:text-sm">
+                        {metric.unit}
+                      </span>
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Mini visualizations */}
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="rounded-2xl bg-[#f3f3f5] p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#6d7a74] sm:text-[10px]">
+                      Load Shift
+                    </p>
+                    <Gauge className="h-4 w-4 text-primary" />
+                  </div>
+                  <p className="mb-3 text-2xl font-black tracking-[-0.04em] text-[#111827] sm:text-3xl">
+                    32<span className="text-sm font-bold text-[#505f76]">%</span>
+                  </p>
+                  <div className="h-3 overflow-hidden rounded-full bg-white">
+                    <div className="gp-primary-gradient h-full w-[64%] rounded-full animate-bar-grow" />
                   </div>
                 </div>
-
-                {/* Side cards */}
-                <div className="grid grid-cols-2 gap-4 lg:flex lg:flex-col">
-                  <div className="gp-card-subtle flex-1 p-5 transition-all duration-300 hover:shadow-[0_28px_80px_-52px_rgba(17,24,39,0.4)]">
-                    <div className="mb-8 flex items-center justify-between">
-                      <div>
-                        <p className="gp-metric-label mb-1">Load Shift</p>
-                        <p className="text-3xl font-black tracking-[-0.04em] text-[#111827]">
-                          32<span className="text-lg font-bold text-[#505f76]">%</span>
-                        </p>
-                      </div>
-                      <Gauge className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="h-16 overflow-hidden rounded-2xl bg-[#f3f3f5] p-2">
-                      <div className="gp-primary-gradient h-full w-[64%] rounded-xl opacity-90 animate-bar-grow" />
-                    </div>
+                <div className="rounded-2xl bg-[#f3f3f5] p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#6d7a74] sm:text-[10px]">
+                      Trading Pulse
+                    </p>
+                    <TrendingUp className="h-4 w-4 text-primary" />
                   </div>
-                  <div className="gp-card-subtle flex-1 p-5 transition-all duration-300 hover:shadow-[0_28px_80px_-52px_rgba(17,24,39,0.4)]">
-                    <div className="mb-6 flex items-center justify-between">
-                      <div>
-                        <p className="gp-metric-label mb-1">Trading Pulse</p>
-                        <p className="text-3xl font-black tracking-[-0.04em] text-[#111827]">
-                          103
-                        </p>
-                      </div>
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex items-end gap-1.5">
-                      {[34, 42, 51, 46, 58, 66, 61, 74].map((height, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 rounded-t-sm bg-primary/75 transition-all duration-200 hover:bg-primary animate-bar-grow"
-                          style={{
-                            height: `${height}px`,
-                            animationDelay: `${400 + i * 60}ms`,
-                          }}
-                        />
-                      ))}
-                    </div>
+                  <p className="mb-3 text-2xl font-black tracking-[-0.04em] text-[#111827] sm:text-3xl">
+                    103
+                  </p>
+                  <div className="flex items-end gap-1 h-3">
+                    {[34, 42, 51, 46, 58, 66, 61, 74].map((h, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 rounded-t-sm bg-primary/70 animate-bar-grow"
+                        style={{
+                          height: `${Math.round((h / 74) * 100)}%`,
+                          animationDelay: `${400 + i * 50}ms`,
+                        }}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
