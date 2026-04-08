@@ -10,23 +10,41 @@ import { useFlows } from "@/hooks/useFlows";
 import { getPriceTierColor, PRICE_LEGEND } from "@/types/energy";
 import { X } from "lucide-react";
 
+function localToUtc(localDateStr: string, localHour: number) {
+  const [y, m, d] = localDateStr.split("-").map(Number);
+  const dt = new Date(y, m - 1, d, localHour, 0, 0);
+  return {
+    date: dt.toISOString().split("T")[0],
+    hour: dt.getUTCHours(),
+  };
+}
+
+function getLocalDate() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export default function MapPage() {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [hour, setHour] = useState(() => new Date().getHours());
 
-  const today = new Date().toISOString().split("T")[0];
+  const localDate = getLocalDate();
+  const utc = localToUtc(localDate, hour);
 
-  const { data: prices = [], isLoading } = useAllPrices(today, hour);
+  const { data: prices = [], isLoading } = useAllPrices(utc.date, utc.hour);
   const { data: energyMix = [] } = useGeneration(
     selectedCountry ?? "PL",
-    today,
-    hour
+    utc.date,
+    utc.hour
   );
-  const { data: flows = [] } = useFlows(today, hour);
+  const { data: flows = [] } = useFlows(utc.date, utc.hour);
 
   const { data: dailyPrices = [] } = usePrices(
     selectedCountry ?? "",
-    today
+    utc.date
   );
 
   const selectedPrice = prices.find((p) => p.country === selectedCountry);
