@@ -41,19 +41,25 @@ export async function GET(request: NextRequest) {
   }
 
   // Fetch from ENTSO-E
+  const debug = searchParams.get("debug") === "1";
   let entsoeData: { source_type: string; hour: number; value_mw: number }[];
   try {
-    console.log(`[gen] Fetching ENTSO-E for ${country}/${date} hour=${hourNum}`);
     entsoeData = await fetchFromEntsoe(country, date);
-    console.log(`[gen] ENTSO-E returned ${entsoeData.length} rows for ${country}/${date}`);
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.stack ?? e.message : String(e);
-    console.error(`ENTSO-E generation error [${country}/${date}]: ${msg}`);
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error(`[gen] ENTSO-E error [${country}/${date}]: ${msg}`);
+    if (debug) return NextResponse.json({ error: msg, step: "entsoe-fetch" });
     return NextResponse.json([]);
   }
 
   if (entsoeData.length === 0) {
-    console.log(`[gen] No ENTSO-E data for ${country}/${date} (hour=${hourNum})`);
+    // Fallback: try returning cached data even for today
+    if (dbData && dbData.length > 0) {
+      return NextResponse.json(
+        aggregateBySource(dbData as { source_type: string; value_mw: number }[])
+      );
+    }
+    if (debug) return NextResponse.json({ error: "empty", country, date, hourNum, dbRows: dbData?.length ?? 0 });
     return NextResponse.json([]);
   }
 
