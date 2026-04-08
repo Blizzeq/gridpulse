@@ -56,13 +56,10 @@ async function entsoeGet(params: Record<string, string>): Promise<string> {
   const token = process.env.ENTSOE_API_TOKEN;
   if (!token) throw new Error("ENTSOE_API_TOKEN not set");
 
-  // Build URL with manual string concatenation (same approach as debug endpoint)
   const paramStr = Object.entries(params)
     .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
     .join("&");
   const finalUrl = `${BASE_URL}?securityToken=${token}&${paramStr}`;
-
-  console.log(`[entsoeGet] ${params.documentType} ${params.in_Domain?.slice(0, 10)}...`);
 
   const res = await fetch(finalUrl, {
     cache: "no-store",
@@ -70,11 +67,8 @@ async function entsoeGet(params: Record<string, string>): Promise<string> {
   });
   if (!res.ok) {
     const text = await res.text();
-    const errMsg = `ENTSO-E ${res.status}: ${text.slice(0, 200)}`;
-    console.error(`[entsoeGet] FAIL: ${errMsg}`);
-    throw new Error(errMsg);
+    throw new Error(`ENTSO-E ${res.status}: ${text.slice(0, 300)}`);
   }
-  console.log(`[entsoeGet] OK ${params.documentType}: ${res.status}`);
   return res.text();
 }
 
@@ -178,7 +172,6 @@ export async function fetchGeneration(
   const timeSeries = asArray(
     doc?.GL_MarketDocument?.TimeSeries
   );
-  console.log(`[entsoe-gen] ${countryCode}: parsed ${timeSeries.length} TimeSeries`);
 
   // Step 1: Average sub-hourly to hourly PER PSR type
   const psrHourly = new Map<string, { sum: number; count: number }>();

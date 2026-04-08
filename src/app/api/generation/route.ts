@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const hourNum = hour ? parseInt(hour) : undefined;
 
-  // Check Supabase first
+  // Check Supabase cache first
   let query = supabase
     .from("generation")
     .select("source_type, value_mw")
@@ -30,46 +30,34 @@ export async function GET(request: NextRequest) {
   }
 
   const { data: dbData } = await query;
+  const cachedRows = dbData as { source_type: string; value_mw: number }[] | null;
+  const hasCache = cachedRows && cachedRows.length > 0;
   const isToday = date === new Date().toISOString().split("T")[0];
 
-  // Return cached data only if it exists AND it's not today
-  // (today's generation data updates throughout the day)
-  if (dbData && dbData.length > 0 && !isToday) {
-    return NextResponse.json(
-      aggregateBySource(dbData as { source_type: string; value_mw: number }[])
-    );
+  // Return cached data if it exists AND it's not today
+  if (hasCache && !isToday) {
+    return NextResponse.json(aggregateBySource(cachedRows));
   }
 
-  // Fetch from ENTSO-E
-  const debug = searchParams.get("debug") === "1";
+  // Fetch fresh data from ENTSO-E
   let entsoeData: { source_type: string; hour: number; value_mw: number }[];
   try {
     entsoeData = await fetchFromEntsoe(country, date);
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.error(`[gen] ENTSO-E error [${country}/${date}]: ${msg}`);
-    // Fallback to cached data on error
-    if (dbData && dbData.length > 0) {
-      return NextResponse.json(
-        aggregateBySource(dbData as { source_type: string; value_mw: number }[])
-      );
-    }
-    if (debug) return NextResponse.json({ error: msg, step: "entsoe-fetch" });
+    console.error(`[gen] ENTSO-E fetch failed [${country}/${date}]: ${msg}`);
+    // Fallback to cached data on error (even for today)
+    if (hasCache) return NextResponse.json(aggregateBySource(cachedRows));
     return NextResponse.json([]);
   }
 
   if (entsoeData.length === 0) {
-    // Fallback: try returning cached data even for today
-    if (dbData && dbData.length > 0) {
-      return NextResponse.json(
-        aggregateBySource(dbData as { source_type: string; value_mw: number }[])
-      );
-    }
-    if (debug) return NextResponse.json({ error: "empty-after-fetch", country, date, hourNum, dbRows: dbData?.length ?? 0 });
+    // ENTSO-E returned no data — use cache as fallback
+    if (hasCache) return NextResponse.json(aggregateBySource(cachedRows));
     return NextResponse.json([]);
   }
 
-  // Cache in Supabase (best-effort)
+  // Cache in Supabase (best-effort, don't block response)
   const rows = entsoeData.map((g) => ({
     country,
     date,
@@ -79,12 +67,12 @@ export async function GET(request: NextRequest) {
     fetched_at: new Date().toISOString(),
   }));
 
-  const { error: upsertErr } = await supabase
+  supabase
     .from("generation")
-    .upsert(rows, { onConflict: "country,date,hour,source_type", ignoreDuplicates: false });
-  if (upsertErr) {
-    await supabase.from("generation").insert(rows);
-  }
+    .upsert(rows, { onConflict: "country,date,hour,source_type", ignoreDuplicates: false })
+    .then(({ error }) => {
+      if (error) console.error(`[gen] Supabase upsert error: ${error.message}`);
+    });
 
   // Return filtered data
   const filtered =
